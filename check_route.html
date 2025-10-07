@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+    <title>763 BRTF Road Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "League Spartan", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 20px;
+            color: black;
+            line-height: 1.6;
+            background-image: url('Background.png');
+            background-color: white;
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: scroll;
+            background-size: cover;
+
+        }
+        #snow-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        }
+        .snowflake {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        animation: fall linear infinite;
+        }
+        @keyframes fall {
+        0% { transform: translateY(-10vh); }
+        100% { transform: translateY(110vh); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            height: 150px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            /* border-bottom: 2px solid #1e40af; */
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .status-line {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .map-container {
+            background-color: rgb(163, 168, 122);
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .map-placeholder {
+            color: #6b7280;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+
+        }
+
+        .legend-color {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: rgb(163, 168, 122, 0.5); /* light olive background */
+            border: 5px solid #4b6337; /* darker green border */
+            position: relative;
+        }
+
+        
+        .legend-color::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 25px;
+            height: 5px;
+            transform: translate(-50%, -50%);
+            border-radius: 2px;
+        }
+        .legend-color.open::before {
+            background-color: #00C936;
+        }
+
+        .legend-color.blocked::before {
+            background-color: #d11414;
+        }
+
+        .legend-color.construction::before {
+            background-color: #000000;
+            background-image: linear-gradient(45deg, transparent 25%, #ffffff 25%, #ffffff 50%, transparent 50%, transparent 75%, #ffffff 75%);
+            background-size: 8px 8px;
+        }
+
+        .status-line {
+            color:#FFBB00;
+            font-size: 20px;
+            text-align: center;
+            
+        }
+
+        .update-btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .update-btn {
+            background-color: #2B411C;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .update-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1e40af;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: #ef4444;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            color: #10b981;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h3 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .modal input:focus, .modal textarea:focus {
+            outline: none;
+            border-color: #1e40af;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: #1e40af;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Popup styles for road segments */
+        .road-popup {
+            position: fixed;
+            background-color: white;
+            border: 2px solid #1e40af;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 100;
+            min-width: 250px;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .road-popup h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .road-popup p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        .road-popup .close-btn {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        /* Update page styles */
+        .update-page {
+            display: none;
+        }
+
+        .back-btn {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .back-btn:hover {
+            background-color: #4b5563;
+        }
+
+        .save-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .save-btn:hover {
+            background-color: #059669;
+        }
+
+        /* SVG styles for road segments */
+        .road-segment {
+            stroke-width: 3;
+            cursor: pointer;
+            transition: stroke-width 0.2s;
+        }
+
+        .road-segment:hover {
+            stroke-width: 5;
+        }
+
+        .road-segment.open {
+            stroke: #00C936;
+        }
+
+        .road-segment.blocked {
+            stroke: #d11414;
+        }
+
+        .road-segment.construction {
+            stroke: #000000;
+            stroke-dasharray: 10,5;
+            pointer-events: none;
+        }
+
+        .road-segment.default {
+            stroke: #00C936;
+        }
+
+        /* Circle styles for locations */
+        .location-circle {
+            cursor: pointer;
+            transition: r 0.2s;
+            color: chartreuse;
+        }
+
+        .location-circle:hover {
+            r: 16;
+        }
+
+        /* Form styles for update modal */
+        .form-group {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .form-group input {
+            margin-bottom: 0;
+        }
+
+        /* Toggle button styles for status */
+        .toggle-buttons {
+            display: flex;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background-color: #f8fafc;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .toggle-btn.active.open {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .toggle-btn.active.blocked {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background-color: #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <!-- <! -- Route finder --> -->
+    <div class="route-finder">
+        <h3>Find Route</h3>
+        <input type="text" id="fromInput" placeholder="Enter starting location">
+        <input type="text" id="toInput" placeholder="Enter destination">
+        <button onclick="findRoute()">Find Route</button>
+        <div id="routeResult"></div>
+    </div>
+
+    <!-- Main View -->
+    <div id="mainPage" class="container">
+        <div class="header">
+        </div>
+        <div id="snow-container"></div>
+
+        <div class="map-container" id="mapContainer">
+            <div class="map-placeholder">
+                <div class="loading"></div>
+                Loading secure map and road status data...
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color open"></div>
+                <span>Road Open</span>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-color blocked"></div>
+                <span>Road Blocked</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color construction"></div>
+                <span>Under Construction</span>
+            </div>
+        </div>
+        <div class="status-line">Last updated on <span id="lastUpdated">Loading...</span></div>
+        <div class="update-btn-container">
+            <button class="update-btn" onclick="showPasswordModal()">Update Status</button>
+        </div>
+    </div>
+
+    <!-- Update Page -->
+    <div id="updatePage" class="update-page container">
+        <button class="back-btn" onclick="goBack()">← Back</button>
+        
+        <div class="header">
+            <h1>763 BRTF</h1>
+            <div class="status-line">Click on any road segment or location to update its information</div>
+        </div>
+
+        <div class="map-container" id="updateMapContainer">
+            <div class="map-placeholder">
+                Update Map will be loaded here
+                <br><br>
+                <em>Click on segments or locations to update their information</em>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color open"></div>
+                <span>Road Open</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color blocked"></div>
+                <span>Road Blocked</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color construction"></div>
+                <span>Under Construction</span>
+            </div>
+        </div>
+
+        <div class="update-btn-container">
+            <button class="save-btn" onclick="saveChanges()" id="saveBtn">
+                <span id="saveText">Save Changes</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h3>Enter Password</h3>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+            <div id="passwordError" class="error-message"></div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="checkPassword()" id="submitBtn">Submit</button>
+                <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Road Info Popup (View Mode) -->
+    <div id="roadPopup" class="road-popup">
+        <button class="close-btn" onclick="closePopup()">&times;</button>
+        <div id="viewContent">
+            <p><strong>From:</strong> <span id="popupFrom">-</span></p>
+            <p><strong>To:</strong> <span id="popupTo">-</span></p>
+            <p><strong>Length:</strong> <span id="popupLength">-</span></p>
+            <p><strong>Status:</strong> <span id="popupStatus">Open</span></p>
+            <p><strong>Last Updated:</strong> <span id="popupLastUpdated"></span></p>
+        </div>
+    </div>
+
+    <!-- Location Info Popup (View Mode) -->
+    <div id="locationPopup" class="road-popup">
+        <button class="close-btn" onclick="closeLocationPopup()">&times;</button>
+        <p><strong>Location Name:</strong> <span id="locationName">-</span></p>
+    </div>
+
+    <!-- Road Update Modal -->
+    <div id="roadUpdateModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Information</h3>
+            <div class="form-group">
+                <label for="updateFrom">From:</label>
+                <input type="text" id="updateFrom" placeholder="Starting point">
+            </div>
+            <div class="form-group">
+                <label for="updateTo">To:</label>
+                <input type="text" id="updateTo" placeholder="Ending point">
+            </div>
+            <div class="form-group">
+                <label for="updateLength">Length:</label>
+                <input type="text" id="updateLength" placeholder="e.g., 2.5km">
+            </div>
+            <div class="form-group">
+                <label>Status:</label>
+                <div class="toggle-buttons">
+                    <button class="toggle-btn open" id="openBtn" onclick="selectStatus('open')">Open</button>
+                    <button class="toggle-btn blocked" id="blockedBtn" onclick="selectStatus('blocked')">Blocked</button>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="saveRoadUpdate()" id="saveRoadBtn">Save</button>
+                <button class="btn btn-secondary" onclick="closeRoadUpdateModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Update Modal -->
+    <div id="locationUpdateModal" class="modal">
+        <div class="modal-content">
+            <h3>Update Information</h3>
+            <div class="form-group">
+                <label for="updateLocationName">Location Name:</label>
+                <input type="text" id="updateLocationName" placeholder="Enter location name">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="saveLocationUpdate()" id="saveLocationBtn">Save</button>
+                <button class="btn btn-secondary" onclick="closeLocationUpdateModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const snowContainer = document.getElementById('snow-container');
+        const numberOfSnowflakes = 150; // Adjust for more or less snow
+
+        for (let i = 0; i < numberOfSnowflakes; i++) {
+            createSnowflake();
+        }
+
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.classList.add('snowflake');
+
+            // Random size
+            const size = Math.random() * 5 + 2; // size between 2px and 7px
+            snowflake.style.width = `${size}px`;
+            snowflake.style.height = `${size}px`;
+
+            // Random horizontal position
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            
+            // Random animation duration and delay
+            snowflake.style.animationDuration = `${Math.random() * 5 + 8}s`; // between 8s and 13s
+            snowflake.style.animationDelay = `${Math.random() * 5}s`;
+
+            // Random opacity
+            snowflake.style.opacity = Math.random() * 0.7 + 0.3; // between 0.3 and 1.0
+
+            snowContainer.appendChild(snowflake);
+        }
+    });
+        // ===== ENVIRONMENT VARIABLES =====
+        const ENV = {
+            API_ENDPOINT: null,
+            initialized: false
+        };
+
+        let isAuthenticated = false;
+        let currentSegment = null;
+        let currentLocation = null;
+        let roadData = {};
+        let locationData = {};
+        let selectedStatus = 'open';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        async function initializeApp() {
+            try {
+                showLoadingMessage('Initializing secure connection...');
+                
+                // Load environment configuration
+                await loadEnvironmentConfig();
+                
+                showLoadingMessage('Loading map and data...');
+                
+                // Load initial data
+                await loadInitialData();
+                
+            } catch (error) {
+                console.error('App initialization failed:', error);
+                showError('Failed to initialize application. Please refresh the page.');
+            }
+        }
+
+        async function loadEnvironmentConfig() {
+            // Replace this with your actual Apps Script URL
+            const possibleEndpoints = [
+                'https://script.google.com/macros/s/AKfycbzJQpkY69aa-emeXqF9TbxLFTQUebHQQs7TaRjvdqDIb2vi0TbYQu615Ugd1X4rPvKklg/exec',
+            ];
+
+            for (const endpoint of possibleEndpoints) {
+                try {
+                    const response = await fetch(`${endpoint}?action=getConfig`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.config.initialized) {
+                        ENV.API_ENDPOINT = endpoint;
+                        ENV.initialized = true;
+                        console.log('✅ Environment configured successfully');
+                        return;
+                    }
+                } catch (error) {
+                    console.log(`Endpoint ${endpoint} failed, trying next...`);
+                }
+            }
+            
+            throw new Error('Could not establish secure connection to backend');
+        }
+
+        function showLoadingMessage(message) {
+            document.getElementById('mapContainer').innerHTML = `
+                <div class="map-placeholder">
+                    <div class="loading"></div>
+                    ${message}
+                </div>
+            `;
+        }
+
+        async function loadInitialData() {
+            if (!ENV.initialized) {
+                throw new Error('Environment not initialized');
+            }
+        
+            try {
+                showLoadingMessage('Loading map...');
+                
+                // Load data first, then map (sequential, not parallel)
+                await loadDataFromSheets();
+                await loadMapFromSecureSource();
+        
+                // Update the map with loaded data
+                updateMapWithData();
+                
+                // Set last updated time
+                updateLastUpdatedTime();
+                
+                // Remove loading message
+                const mapContainer = document.getElementById('mapContainer');
+                const loadingDiv = mapContainer.querySelector('.map-placeholder');
+                if (loadingDiv) {
+                    loadingDiv.remove();
+                }
+                
+                console.log('✅ Initialization complete');
+                
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+                showError('Error loading map and data: ' + error.message);
+            }
+        }
+
+        async function loadMapFromSecureSource() {
+            try {
+                const response = await fetch(`${ENV.API_ENDPOINT}?action=getMap`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const svgText = await response.text();
+                
+                if (!svgText || svgText.trim() === '') {
+                    throw new Error('Empty SVG response');
+                }
+                
+                // Inject into both containers
+                document.getElementById('mapContainer').innerHTML = svgText;
+                document.getElementById('updateMapContainer').innerHTML = svgText;
+
+                // Process both containers
+                ['mapContainer', 'updateMapContainer'].forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    processMapContainer(container);
+                    setupMapInteractions(containerId);
+                });
+                
+                console.log('✅ Map loaded from secure source');
+                
+            } catch (error) {
+                throw new Error('Failed to load map from secure source: ' + error.message);
+            }
+        }
+
+        async function loadDataFromSheets() {
+            if (!ENV.API_ENDPOINT) return;
+
+            try {
+                const response = await fetch(`${ENV.API_ENDPOINT}?action=getData`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    roadData = data.roadData || {};
+                    locationData = data.locationData || {};
+                    console.log('Data loaded from database');
+                } else {
+                    console.warn('Failed to load data:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading data from database:', error);
+            }
+        }
+
+        async function saveDataToSheets() {
+            if (!ENV.API_ENDPOINT) {
+                console.log('API not configured, data saved locally only');
+                return true;
+            }
+        
+            return new Promise((resolve) => {
+                try {
+                    console.log('Sending data via hidden form...');
+                    
+                    // Create a hidden iframe for the response
+                    let iframe = document.getElementById('save_iframe');
+                    if (!iframe) {
+                        iframe = document.createElement('iframe');
+                        iframe.id = 'save_iframe';
+                        iframe.name = 'save_iframe';
+                        iframe.style.display = 'none';
+                        document.body.appendChild(iframe);
+                    }
+                    
+                    // Create a hidden form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = ENV.API_ENDPOINT;
+                    form.target = 'save_iframe';
+                    form.style.display = 'none';
+                    
+                    // Add the action field
+                    const actionInput = document.createElement('input');
+                    actionInput.type = 'hidden';
+                    actionInput.name = 'action';
+                    actionInput.value = 'saveData';
+                    form.appendChild(actionInput);
+                    
+                    // Add the JSON data field
+                    const dataInput = document.createElement('input');
+                    dataInput.type = 'hidden';
+                    dataInput.name = 'jsonData';
+                    dataInput.value = JSON.stringify({
+                        roadData: roadData,
+                        locationData: locationData,
+                        timestamp: getCurrentTime()
+                    });
+                    form.appendChild(dataInput);
+                    
+                    // Handle the response
+                    iframe.onload = function() {
+                        try {
+                            // Check if save was successful
+                            console.log('Form submitted successfully');
+                            resolve(true);
+                        } catch (error) {
+                            console.log('Form submission completed with potential error');
+                            resolve(false);
+                        }
+                        // Clean up
+                        if (form.parentNode) {
+                            form.parentNode.removeChild(form);
+                        }
+                    };
+                    
+                    // Submit the form
+                    document.body.appendChild(form);
+                    form.submit();
+                    
+                } catch (error) {
+                    console.error('Form submission error:', error);
+                    resolve(false);
+                }
+            });
+        }
+
+        async function verifyPassword(password) {
+            if (!ENV.API_ENDPOINT) {
+                throw new Error('API endpoint not configured');
+            }
+
+            try {
+                const response = await fetch(`${ENV.API_ENDPOINT}?action=verifyPassword&password=${encodeURIComponent(password)}`);
+                const result = await response.json();
+                return result.success;
+            } catch (error) {
+                console.error('Error verifying password:', error);
+                throw error;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('mapContainer').innerHTML = 
+                `<p style="color:#ef4444; text-align: center; padding: 20px;">${message}</p>`;
+        }
+
+        function showSuccess(message) {
+            const container = document.getElementById('mapContainer');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            successDiv.style.position = 'absolute';
+            successDiv.style.top = '10px';
+            successDiv.style.left = '50%';
+            successDiv.style.transform = 'translateX(-50%)';
+            successDiv.style.backgroundColor = '#f0fdf4';
+            successDiv.style.padding = '8px 16px';
+            successDiv.style.borderRadius = '4px';
+            successDiv.style.border = '1px solid #10b981';
+            
+            container.style.position = 'relative';
+            container.appendChild(successDiv);
+            
+            setTimeout(() => {
+                if (container.contains(successDiv)) {
+                    container.removeChild(successDiv);
+                }
+            }, 3000);
+        }
+
+        function processMapContainer(container) {
+            // Process road paths (R1, R2, R3, etc.)
+            const roads = container.querySelectorAll('[id^="R"], path[id^="R"]');
+            roads.forEach(road => {
+                road.removeAttribute('style');
+                road.setAttribute('fill', 'none');
+                road.classList.add('road-segment');
+                
+                const roadId = road.getAttribute('id');
+                if (!roadData[roadId]) {
+                    roadData[roadId] = {
+                        from: '',
+                        to: '',
+                        length: '',
+                        status: 'open'
+                    };
+                }
+                
+                // IMPORTANT: Apply the visual class immediately
+                road.classList.remove('open', 'blocked');
+                road.classList.add(roadData[roadId].status);
+            });
+        
+            // Process construction roads (C1, C2, C3, etc.)
+            const constructionRoads = container.querySelectorAll('[id^="C"], path[id^="C"]');
+            constructionRoads.forEach(road => {
+                road.removeAttribute('style');
+                road.setAttribute('fill', 'none');
+                road.classList.add('road-segment', 'construction');
+            });
+        
+            // Process location circles (S1, S2, S3, etc.)
+            const locations = container.querySelectorAll('[id^="S"], circle[id^="S"]');
+            locations.forEach(location => {
+                location.classList.add('location-circle');
+                
+                const locationId = location.getAttribute('id');
+                if (!locationData[locationId]) {
+                    locationData[locationId] = {
+                        name: ''
+                    };
+                }
+            });
+        }
+
+        function updateMapWithData() {
+            ['mapContainer', 'updateMapContainer'].forEach(containerId => {
+                const container = document.getElementById(containerId);
+                
+                // Update road segments
+                Object.keys(roadData).forEach(roadId => {
+                    const road = container.querySelector(`[id="${roadId}"]`);
+                    if (road && !road.classList.contains('construction')) {
+                        road.classList.remove('open', 'blocked');
+                        road.classList.add(roadData[roadId].status);
+                    }
+                });
+            });
+        }
+
+        function setupMapInteractions(containerId) {
+            const container = document.getElementById(containerId);
+            const isUpdateMode = containerId === 'updateMapContainer';
+            
+            // Setup road segment interactions
+            const segments = container.querySelectorAll('.road-segment');
+            segments.forEach(segment => {
+                segment.addEventListener('click', function(e) {
+                    if (segment.classList.contains('construction')) return;
+                    
+                    if (isUpdateMode) {
+                        showRoadUpdateModal(segment);
+                    } else {
+                        showRoadPopup(e, segment);
+                    }
+                });
+            });
+
+            // Setup location circle interactions
+            const locations = container.querySelectorAll('.location-circle');
+            locations.forEach(location => {
+                location.addEventListener('click', function(e) {
+                    if (isUpdateMode) {
+                        showLocationUpdateModal(location);
+                    } else {
+                        showLocationPopup(e, location);
+                    }
+                });
+            });
+        }
+
+        function showRoadPopup(event, segment) {
+            const popup = document.getElementById('roadPopup');
+            const segmentId = segment.getAttribute('id');
+            const data = roadData[segmentId] || { from: '', to: '', length: '', status: 'open' };
+            
+            document.getElementById('popupFrom').textContent = data.from || '-';
+            document.getElementById('popupTo').textContent = data.to || '-';
+            document.getElementById('popupLength').textContent = data.length || '-';
+            document.getElementById('popupStatus').textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+            document.getElementById('popupLastUpdated').textContent = data.lastUpdated || getCurrentTime();
+            
+            const segmentRect = segment.getBoundingClientRect();
+            const popupX = segmentRect.left + (segmentRect.width / 2) + 30;
+            const popupY = segmentRect.top - 40;
+            
+            popup.style.left = popupX + 'px';
+            popup.style.top = popupY + 'px';
+            popup.style.display = 'block';
+        }
+
+        function showLocationPopup(event, location) {
+            const popup = document.getElementById('locationPopup');
+            const locationId = location.getAttribute('id');
+            const data = locationData[locationId] || { name: '' };
+            
+            document.getElementById('locationName').textContent = data.name || '-';
+            
+            const locationRect = location.getBoundingClientRect();
+            const popupX = locationRect.left + (locationRect.width / 2) + 30;
+            const popupY = locationRect.top - 40;
+            
+            popup.style.left = popupX + 'px';
+            popup.style.top = popupY + 'px';
+            popup.style.display = 'block';
+        }
+
+        function showRoadUpdateModal(segment) {
+            currentSegment = segment;
+            const segmentId = segment.getAttribute('id');
+            const data = roadData[segmentId] || { from: '', to: '', length: '', status: 'open' };
+            
+            document.getElementById('updateFrom').value = data.from || '';
+            document.getElementById('updateTo').value = data.to || '';
+            document.getElementById('updateLength').value = data.length || '';
+            
+            selectedStatus = data.status || 'open';
+            selectStatus(selectedStatus);
+            
+            document.getElementById('roadUpdateModal').style.display = 'flex';
+        }
+
+        function showLocationUpdateModal(location) {
+            currentLocation = location;
+            const locationId = location.getAttribute('id');
+            const data = locationData[locationId] || { name: '' };
+            
+            document.getElementById('updateLocationName').value = data.name || '';
+            document.getElementById('locationUpdateModal').style.display = 'flex';
+        }
+
+        function selectStatus(status) {
+            selectedStatus = status;
+            const openBtn = document.getElementById('openBtn');
+            const blockedBtn = document.getElementById('blockedBtn');
+            
+            openBtn.classList.remove('active');
+            blockedBtn.classList.remove('active');
+            
+            if (status === 'open') {
+                openBtn.classList.add('active');
+            } else {
+                blockedBtn.classList.add('active');
+            }
+        }
+
+        async function saveRoadUpdate() {
+            if (currentSegment) {
+                const saveBtn = document.getElementById('saveRoadBtn');
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<div class="loading"></div>Saving...';
+
+                const segmentId = currentSegment.getAttribute('id');
+                const data = {
+                    from: document.getElementById('updateFrom').value,
+                    to: document.getElementById('updateTo').value,
+                    length: document.getElementById('updateLength').value,
+                    status: selectedStatus,
+                    lastUpdated: getCurrentTime()
+                };
+                
+                roadData[segmentId] = data;
+                
+                // Update visual appearance in both containers
+                ['mapContainer', 'updateMapContainer'].forEach(containerId => {
+                    const container = document.getElementById(containerId);
+                    const segment = container.querySelector(`[id="${segmentId}"]`);
+                    if (segment) {
+                        segment.classList.remove('open', 'blocked');
+                        segment.classList.add(data.status);
+                    }
+                });
+
+               saveBtn.disabled = false;
+               saveBtn.innerHTML = 'Save';
+           }
+           
+           closeRoadUpdateModal();
+       }
+
+       async function saveLocationUpdate() {
+           if (currentLocation) {
+               const saveBtn = document.getElementById('saveLocationBtn');
+               saveBtn.disabled = true;
+               saveBtn.innerHTML = '<div class="loading"></div>Saving...';
+
+               const locationId = currentLocation.getAttribute('id');
+               locationData[locationId] = {
+                   name: document.getElementById('updateLocationName').value,
+                   lastUpdated: getCurrentTime()
+               };
+
+               saveBtn.disabled = false;
+               saveBtn.innerHTML = 'Save';
+           }
+           
+           closeLocationUpdateModal();
+       }
+
+       function closePopup() {
+           document.getElementById('roadPopup').style.display = 'none';
+       }
+
+       function closeLocationPopup() {
+           document.getElementById('locationPopup').style.display = 'none';
+       }
+
+       function closeRoadUpdateModal() {
+           document.getElementById('roadUpdateModal').style.display = 'none';
+           currentSegment = null;
+       }
+
+       function closeLocationUpdateModal() {
+           document.getElementById('locationUpdateModal').style.display = 'none';
+           currentLocation = null;
+       }
+
+       function showPasswordModal() {
+           document.getElementById('passwordModal').style.display = 'flex';
+           document.getElementById('passwordInput').focus();
+       }
+
+       function closePasswordModal() {
+           document.getElementById('passwordModal').style.display = 'none';
+           document.getElementById('passwordInput').value = '';
+           document.getElementById('passwordError').textContent = '';
+       }
+
+       async function checkPassword() {
+           const password = document.getElementById('passwordInput').value;
+           const submitBtn = document.getElementById('submitBtn');
+           const errorDiv = document.getElementById('passwordError');
+           
+           if (!password) {
+               errorDiv.textContent = 'Please enter a password';
+               return;
+           }
+
+           submitBtn.disabled = true;
+           submitBtn.innerHTML = '<div class="loading"></div>Verifying...';
+           errorDiv.textContent = '';
+
+           try {
+               const isValid = await verifyPassword(password);
+               
+               if (isValid) {
+                   isAuthenticated = true;
+                   closePasswordModal();
+                   showUpdatePage();
+               } else {
+                   errorDiv.textContent = 'Incorrect password';
+                   document.getElementById('passwordInput').value = '';
+               }
+           } catch (error) {
+               errorDiv.textContent = 'Error verifying password. Please try again.';
+               console.error('Password verification error:', error);
+           }
+
+           submitBtn.disabled = false;
+           submitBtn.innerHTML = 'Submit';
+       }
+
+       function showUpdatePage() {
+           document.getElementById('mainPage').style.display = 'none';
+           document.getElementById('updatePage').style.display = 'block';
+           loadMapFromSecureSource().then(() => updateMapWithData());
+       }
+
+       function goBack() {
+           document.getElementById('updatePage').style.display = 'none';
+           document.getElementById('mainPage').style.display = 'block';
+           isAuthenticated = false;
+           closePopup();
+           closeLocationPopup();
+           closeRoadUpdateModal();
+           closeLocationUpdateModal();
+       }
+       
+       async function saveChanges() {
+            const saveBtn = document.getElementById('saveBtn');
+            const saveText = document.getElementById('saveText');
+            
+            saveBtn.disabled = true;
+            saveText.innerHTML = '<div class="loading"></div>Saving to Database...';
+        
+            try {
+                console.log('Starting save process...');
+                console.log('Road data to save:', roadData);
+                console.log('Location data to save:', locationData);
+                console.log('API endpoint:', ENV.API_ENDPOINT);
+        
+                const success = await saveDataToSheets();
+                console.log('Save result:', success);
+                
+                if (success) {
+                    updateLastUpdatedTime();
+                    await loadMapFromSecureSource();
+                    updateMapWithData();
+                    saveText.textContent = 'Changes Saved Successfully';
+                    
+                    setTimeout(() => {
+                        saveText.textContent = 'Save Changes';
+                    }, 2000);
+                } else {
+                    saveText.textContent = 'Error saving changes';
+                    setTimeout(() => {
+                        saveText.textContent = 'Save Changes';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Detailed save error:', error);
+                saveText.textContent = '❌ Connection error - Check console';
+                setTimeout(() => {
+                    saveText.textContent = 'Save Changes';
+                }, 3000);
+            }
+        
+            saveBtn.disabled = false;
+        }
+
+       function updateLastUpdatedTime() {
+           document.getElementById('lastUpdated').textContent = getCurrentTime();
+       }
+
+       function getCurrentTime() {
+           const now = new Date();
+           const day = String(now.getDate()).padStart(2, '0');
+           const month = String(now.getMonth() + 1).padStart(2, '0');
+           const year = now.getFullYear();
+           const hours = String(now.getHours()).padStart(2, '0');
+           const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+           return `${day}/${month}/${year} ${hours}:${minutes}`;
+       }
+
+       // Handle password input with Enter key
+       document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+           if (e.key === 'Enter') {
+               checkPassword();
+           }
+       });
+
+       // Close popups when clicking outside
+       document.addEventListener('click', function(e) {
+           const roadPopup = document.getElementById('roadPopup');
+           const locationPopup = document.getElementById('locationPopup');
+           
+           if (roadPopup.style.display === 'block' && !roadPopup.contains(e.target) && !e.target.classList.contains('road-segment')) {
+               closePopup();
+           }
+           
+           if (locationPopup.style.display === 'block' && !locationPopup.contains(e.target) && !e.target.classList.contains('location-circle')) {
+               closeLocationPopup();
+           }
+       });
+
+       // Close modals when clicking outside
+       document.getElementById('passwordModal').addEventListener('click', function(e) {
+           if (e.target === this) {
+               closePasswordModal();
+           }
+       });
+
+       document.getElementById('roadUpdateModal').addEventListener('click', function(e) {
+           if (e.target === this) {
+               closeRoadUpdateModal();
+           }
+       });
+
+       document.getElementById('locationUpdateModal').addEventListener('click', function(e) {
+           if (e.target === this) {
+               closeLocationUpdateModal();
+           }
+       });
+
+       // Auto-retry connection if initial load fails
+       window.addEventListener('load', function() {
+           if (!ENV.initialized) {
+               console.log('Retrying connection in 2 seconds...');
+               setTimeout(initializeApp, 2000);
+           }
+       });
+   </script>
+</body>
+</html>
