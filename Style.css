@@ -1,0 +1,127 @@
+/* ========== Basic Reset ========== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ========== Body and Layout ========== */
+body {
+  background-color: #f4f7fb;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ========== Header ========== */
+header {
+  background-color: #004aad;
+  color: #fff;
+  text-align: center;
+  padding: 1rem 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* ========== Main Layout ========== */
+main {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+/* ========== Controls Section ========== */
+#controls {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 320px;
+}
+
+#controls h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #004aad;
+}
+
+label {
+  display: block;
+  margin-top: 0.8rem;
+  font-weight: 600;
+}
+
+select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+}
+
+button {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.7rem;
+  background-color: #004aad;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #003580;
+}
+
+#result {
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 600;
+  color: #004aad;
+}
+
+/* ========== Map Section ========== */
+#mapArea {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 600px;
+  min-height: 400px;
+}
+
+#mapArea h2 {
+  text-align: center;
+  color: #004aad;
+  margin-bottom: 1rem;
+}
+
+#mapContainer {
+  width: 100%;
+  height: 350px;
+  background-color: #e8efff;
+  border: 2px dashed #004aad;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+}
+
+/* ========== Footer ========== */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #004aad;
+  color: #fff;
+  font-size: 0.9rem;
+}

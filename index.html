@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shortest Distance Finder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Shortest Distance Finder</h1>
+  </header>
+
+  <main>
+    <section id="controls">
+      <h2>Find Shortest Path</h2>
+
+      <label for="start">Start Point:</label>
+      <select id="start">
+        <option value="">-- Select Start --</option>
+      </select>
+
+      <label for="end">End Point:</label>
+      <select id="end">
+        <option value="">-- Select End --</option>
+      </select>
+
+      <button id="findPathBtn">Find Shortest Path</button>
+
+      <p id="result"></p>
+    </section>
+
+    <section id="mapArea">
+      <h2>Map (Preview)</h2>
+      <div id="mapContainer">
+        <!-- Nodes/edges can be displayed here -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Powered by Google Sheets & Dijkstra Algorithm</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
